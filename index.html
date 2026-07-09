@@ -1,693 +1,258 @@
 <!DOCTYPE html><html lang="en"><head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-<title>Text Video Generator Studio</title>
-<link rel="preconnect" href="https://fonts.googleapis.com" />
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="" />
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Orbitron:wght@500;700&amp;family=Bebas+Neue&amp;family=Pacifico&amp;family=Permanent+Marker&amp;family=Press+Start+2P&amp;family=Righteous&amp;family=Russo+One&amp;family=Monoton&amp;family=Audiowide&amp;display=swap" rel="stylesheet" />
-
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>Social Media Image Creator</title>
+    
 <link rel="stylesheet" href="style.css" /></head>
 <body>
-
-<div class="app">
-  <!-- HEADER -->
-  <header class="header">
-    <div class="logo">
-      <div class="logo-mark">▶</div>
-      <div class="logo-text">TEXT STUDIO<small>VIDEO GENERATOR</small></div>
+    <div class="loading" id="loading">
+        <div class="spinner"></div>
     </div>
-    <input type="text" class="project-title" id="projectTitle" value="Untitled Project" spellcheck="false" />
-    <div class="header-actions">
-      <div class="save-split">
-        <button class="btn save-main" id="btnSave" title="Save Project (JSON)">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
-          <span>Save</span>
+
+    <div class="toast" id="toast"></div>
+
+
+
+    <div class="container">
+        <!-- Canvas Area -->
+        <div class="canvas-container">
+            <div class="canvas-wrapper" id="canvasWrapper">
+                <canvas id="mainCanvas" width="1200" height="630"></canvas>
+            </div>
+        </div>
+
+        <!-- Right Sidebar - Controls -->
+        <aside class="sidebar-right active">
+            <div class="drag-handle-container" id="dragHandle">
+                <div class="drag-handle"></div>
+            </div>
+            <!-- Explore Section (Moved from Header) -->
+            <h3 class="section-title" style="margin-top: 0; margin-bottom: 0.5rem;">Explore</h3>
+            <div class="header-buttons" style="display: flex; gap: 0.5rem; flex-wrap: wrap; justify-content: center; margin-bottom: 1.5rem; padding: 0; overflow: visible;">
+                <button class="import-btn" onclick="document.getElementById('importAll').click()">
+                    📁 Import
+                </button>
+                <input type="file" id="importAll" multiple="" accept="image/*" onchange="handleImportAll(event)" style="display: none;" />
+                
+                <select id="platformSelect" class="header-select" onchange="const args = this.value.split(','); setPlatform(args[0], parseInt(args[1]), parseInt(args[2])); adjustSelectWidth(this);">
+                    <option value="Facebook,1200,630">Facebook</option>
+                    <option value="WhatsApp,1080,1080">WhatsApp</option>
+                    <option value="Twitter,1200,675">Twitter</option>
+                    <option value="Instagram,1080,1080">Instagram</option>
+                    <option value="Story,1080,1920">Story</option>
+                </select>
+
+                <select id="formatSelect" class="header-select" onchange="setFormat(this.value); adjustSelectWidth(this);">
+                    <option value="png">PNG</option>
+                    <option value="jpg">JPG</option>
+                    <option value="webp">WebP</option>
+                </select>
+
+                <button class="save-btn" onclick="saveImage()">
+                    💾 Save
+                </button>
+            </div>
+
+            <!-- Background Section -->
+            <div class="control-section active" id="tab-bg">
+                <h3 class="section-title">Background</h3>
+                
+                <div style="display: flex; gap: 1rem; align-items: stretch; justify-content: space-between;">
+                    <div class="control-group" style="margin-bottom: 0; display: flex; flex-direction: column; align-items: center; gap: 0.25rem;">
+                        <label class="control-label" style="margin-bottom: 0; font-size: 0.75rem;">Color 1</label>
+                        <input type="color" id="gradientColor1" value="#667eea" onchange="updateBackground()" style="width: 36px; height: 36px; padding: 0; border: none; border-radius: 4px; cursor: pointer;" />
+                    </div>
+
+                    <div class="control-group" style="margin-bottom: 0; display: flex; flex-direction: column; align-items: center; gap: 0.25rem;">
+                        <label class="control-label" style="margin-bottom: 0; font-size: 0.75rem;">Color 2</label>
+                        <input type="color" id="gradientColor2" value="#764ba2" onchange="updateBackground()" style="width: 36px; height: 36px; padding: 0; border: none; border-radius: 4px; cursor: pointer;" />
+                    </div>
+
+                    <div class="control-group" style="margin-bottom: 0; flex: 1;">
+                        <label class="file-label" onclick="document.getElementById('bgImage').click()" style="padding: 0.5rem; display: flex; align-items: center; justify-content: center; height: 100%; font-size: 0.85rem; margin: 0;">
+                            📤 Upload BG
+                        </label>
+                        <input type="file" id="bgImage" accept="image/*" onchange="handleBgImage(event)" style="display: none;" />
+                    </div>
+                </div>
+            </div>
+
+            <!-- Image Adjustments -->
+            <div class="control-section" id="tab-adjust">
+                <h3 class="section-title">Image Adjustments</h3>
+                
+                <div class="control-group">
+                    <label class="control-label">
+                        Size <span class="range-value" id="sizeValue">100%</span>
+                    </label>
+                    <input type="range" id="imgSize" min="0" max="200" value="100" oninput="updateImageAdjustments()" />
+                </div>
+
+                <div class="template-grid" id="adjustOptionButtons" style="margin-bottom: 1.5rem; grid-template-columns: repeat(3, 1fr); gap: 0.5rem;">
+                    <button class="template-btn active" data-adjust="contrast" style="font-size: 0.75rem; padding: 0.5rem; min-height: unset;">Contrast</button>
+                    <button class="template-btn" data-adjust="brightness" style="font-size: 0.75rem; padding: 0.5rem; min-height: unset;">Brightness</button>
+                    <button class="template-btn" data-adjust="darkness" style="font-size: 0.75rem; padding: 0.5rem; min-height: unset;">Darkness</button>
+                    <button class="template-btn" data-adjust="blur" style="font-size: 0.75rem; padding: 0.5rem; min-height: unset;">Blur</button>
+                    <button class="template-btn" data-adjust="opacity" style="font-size: 0.75rem; padding: 0.5rem; min-height: unset;">Opacity</button>
+                    <button class="template-btn" data-adjust="sepia" style="font-size: 0.75rem; padding: 0.5rem; min-height: unset;">Sepia</button>
+                    <button class="template-btn" data-adjust="warmth" style="font-size: 0.75rem; padding: 0.5rem; min-height: unset;">Warmth</button>
+                    <button class="template-btn" data-adjust="tint" style="font-size: 0.75rem; padding: 0.5rem; min-height: unset;">Tint</button>
+                    <button class="template-btn" data-adjust="hue" style="font-size: 0.75rem; padding: 0.5rem; min-height: unset;">Hue Rotate</button>
+                </div>
+
+                <div class="control-group" id="masterSliderGroup">
+                    <label class="control-label">
+                        <span id="masterAdjustLabel">Contrast</span> <span class="range-value" id="masterAdjustValue">100%</span>
+                    </label>
+                    <input type="range" id="masterAdjustSlider" min="0" max="200" value="100" />
+                </div>
+
+                <div style="display: none;">
+                    <input type="range" id="contrast" min="0" max="200" value="100" />
+                    <input type="range" id="brightness" min="0" max="200" value="100" />
+                    <input type="range" id="darkness" min="0" max="100" value="0" />
+                    <input type="range" id="blur" min="0" max="20" value="0" />
+                    <input type="range" id="opacity" min="0" max="100" value="100" />
+                    <input type="range" id="sepia" min="0" max="100" value="0" />
+                    <input type="range" id="warmth" min="-100" max="100" value="0" />
+                    <input type="range" id="tint" min="-100" max="100" value="0" />
+                    <input type="range" id="hue" min="0" max="360" value="0" />
+                </div>
+            </div>
+
+            <!-- Text Effect Templates -->
+            <div class="control-section" id="tab-effects">
+                <h3 class="section-title">Text Effect Templates</h3>
+                <div class="template-grid">
+                    <button class="template-btn neon" onclick="applyTextTemplate('neon')">✨ Neon Glow</button>
+                    <button class="template-btn gold" onclick="applyTextTemplate('gold')">🏆 Gold</button>
+                    <button class="template-btn outline" onclick="applyTextTemplate('outline')">⭕ Outline</button>
+                    <button class="template-btn shadow" onclick="applyTextTemplate('shadow')">🌑 3D Shadow</button>
+                    <button class="template-btn gradient" onclick="applyTextTemplate('gradient')">🌈 Gradient</button>
+                    <button class="template-btn" onclick="applyTextTemplate('retro')" style="background: #ff6b6b; color: white;">📼 Retro</button>
+                    <button class="template-btn" onclick="applyTextTemplate('cyber')" style="background: #00d9ff; color: #000;">🤖 Cyber</button>
+                    <button class="template-btn" onclick="applyTextTemplate('elegant')" style="background: linear-gradient(135deg, #667eea, #764ba2);">💎 Elegant</button>
+                </div>
+            </div>
+
+            <!-- Text Tools -->
+            <div class="control-section" id="tab-text" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.75rem; align-items: end;">
+                <h3 class="section-title" style="grid-column: 1 / -1; margin-bottom: 0;">Text Tools</h3>
+                
+                <div class="control-group" style="grid-column: 1 / -1; margin-bottom: 0;">
+                    <label class="control-label">Text Content</label>
+                    <textarea id="textContent" placeholder="Enter your text here..." oninput="updateText()" style="min-height: 60px;"></textarea>
+                </div>
+
+                <div class="control-group" style="grid-column: span 2; margin-bottom: 0;">
+                    <label class="control-label">Font Family</label>
+                    <select id="fontFamily" onchange="updateText()" style="width: 100%; padding: 0.5rem; border-radius: 8px; border: 1px solid var(--border-color); background: var(--secondary-bg); color: var(--text-primary);">
+                        <option value="Arial">Arial</option>
+                        <option value="Helvetica">Helvetica</option>
+                        <option value="Times New Roman">Times New Roman</option>
+                        <option value="Georgia">Georgia</option>
+                        <option value="Verdana">Verdana</option>
+                        <option value="Courier New">Courier New</option>
+                        <option value="Impact">Impact</option>
+                        <option value="Comic Sans MS">Comic Sans MS</option>
+                    </select>
+                </div>
+
+                <div class="control-group" style="margin-bottom: 0; display: flex; flex-direction: column; width: 100%;">
+                    <label class="control-label">Text Color</label>
+                    <input type="color" id="textColor" value="#ffffff" onchange="updateText()" style="width: 100%; height: 36px; padding: 0; border: none; border-radius: 4px; cursor: pointer;" />
+                </div>
+
+                <div class="control-group" style="grid-column: 1 / -1; margin-bottom: 0;">
+                    <label class="control-label">
+                        Text Size <span class="range-value" id="textSizeValue">48px</span>
+                    </label>
+                    <input type="range" id="textSize" min="12" max="120" value="48" oninput="updateText()" />
+                </div>
+
+                <div class="control-group" style="grid-column: 1 / -1; margin-bottom: 0;">
+                    <label class="control-label">Styling</label>
+                    <div class="text-controls" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem;">
+                        <button class="text-btn" id="boldBtn" onclick="toggleTextStyle('bold')">B</button>
+                        <button class="text-btn" id="italicBtn" onclick="toggleTextStyle('italic')">I</button>
+                        <button class="text-btn" id="underlineBtn" onclick="toggleTextStyle('underline')">U</button>
+                    </div>
+                </div>
+
+                <div class="control-group" style="grid-column: 1 / -1; margin-bottom: 0;">
+                    <label class="control-label">Alignment</label>
+                    <div class="align-controls" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem;">
+                        <button class="align-btn active" id="alignLeft" onclick="setTextAlign('left')">⬅ Left</button>
+                        <button class="align-btn" id="alignCenter" onclick="setTextAlign('center')">⬆ Center</button>
+                        <button class="align-btn" id="alignRight" onclick="setTextAlign('right')">➡ Right</button>
+                    </div>
+                </div>
+
+                <div class="control-group" style="margin-bottom: 0; align-self: center;">
+                    <div class="toggle-switch">
+                        <span class="control-label" style="margin: 0; font-size: 0.85rem;">Text BG</span>
+                        <div class="toggle" id="textBgToggle" onclick="toggleTextBackground()">
+                            <div class="toggle-slider"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="control-group" id="textBgColorGroup" style="display: none; margin-bottom: 0; width: 100%;">
+                    <label class="control-label" style="font-size: 0.85rem;">BG Color</label>
+                    <input type="color" id="textBgColor" value="#000000" onchange="updateText()" style="width: 100%; height: 36px; padding: 0; border: none; border-radius: 4px; cursor: pointer;" />
+                </div>
+
+                <div class="control-group" style="margin-bottom: 0; display: flex; flex-direction: column; width: 100%;">
+                    <label class="control-label" style="font-size: 0.85rem;">Shadow</label>
+                    <input type="color" id="shadowColor" value="#000000" onchange="updateText()" style="width: 100%; height: 36px; padding: 0; border: none; border-radius: 4px; cursor: pointer;" />
+                </div>
+
+                <div class="control-group" style="grid-column: 1 / -1; margin-bottom: 0;">
+                    <label class="control-label">
+                        Shadow Blur <span class="range-value" id="shadowBlurValue">0px</span>
+                    </label>
+                    <input type="range" id="shadowBlur" min="0" max="50" value="0" oninput="updateText()" />
+                </div>
+            </div>
+
+            <!-- Settings -->
+            <div class="control-section" id="tab-settings">
+                <h3 class="section-title">Settings</h3>
+                <div class="control-group">
+                    <label class="control-label">Mobile Sidebar Position</label>
+                    <select id="sidebarPosition" onchange="toggleSidebarPosition(this.value)" style="width: 100%; padding: 0.5rem; background: var(--primary-bg); color: var(--text-primary); border: 1px solid var(--border-color); border-radius: 6px;">
+                        <option value="bottom">Bottom Sheet</option>
+                        <option value="right">Right Side</option>
+                    </select>
+                </div>
+            </div>
+        </aside>
+    </div>
+
+    <!-- Bottom Navigation for Mobile -->
+    <nav class="bottom-nav">
+        <button class="nav-tab active" data-tab="tab-bg">
+            <span style="font-size: 1.25rem;">🖼️</span>
+            <span>BG</span>
         </button>
-        <button class="save-arrow" id="btnSaveArrow" title="More save options">▼</button>
-        <div class="save-dropdown" id="saveDropdown">
-          <button class="save-dropdown-item" id="btnSaveHD">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-            Save Video
-            <span class="badge badge-hd">HD 720p</span>
-          </button>
-          <div class="save-dropdown-sep"></div>
-          <button class="save-dropdown-item" id="btnSaveSD">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-            Save Video
-            <span class="badge badge-sd">SD 360p</span>
-          </button>
-        </div>
-      </div>
-      <button class="btn" id="btnLoad" title="Load Project">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
-        <span>Load</span>
-      </button>
-      <button class="btn primary" id="btnExport" title="Export">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-        <span>Export</span>
-      </button>
-      <button class="btn btn-icon ghost" id="btnSettings" title="Settings">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-      </button>
-    </div>
-  </header>
+        <button class="nav-tab" data-tab="tab-adjust">
+            <span style="font-size: 1.25rem;">🎛️</span>
+            <span>Adjust</span>
+        </button>
+        <button class="nav-tab" data-tab="tab-effects">
+            <span style="font-size: 1.25rem;">✨</span>
+            <span>Effects</span>
+        </button>
+        <button class="nav-tab" data-tab="tab-text">
+            <span style="font-size: 1.25rem;">📝</span>
+            <span>Text</span>
+        </button>
+        <button class="nav-tab" data-tab="tab-settings">
+            <span style="font-size: 1.25rem;">⚙️</span>
+            <span>Settings</span>
+        </button>
+    </nav>
 
-  <!-- MAIN -->
-  <div class="main">
-    <!-- LEFT TOOLBAR -->
-    <aside class="toolbar" id="toolbar">
-      <button class="tool-btn active" data-tool="select" title="Select">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3l7.07 16.97 2.51-7.39 7.39-2.51L3 3z"/></svg>
-      </button>
-      <button class="tool-btn" data-tool="text" title="Add Text">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="4 7 4 4 20 4 20 7"/><line x1="9" y1="20" x2="15" y2="20"/><line x1="12" y1="4" x2="12" y2="20"/></svg>
-      </button>
-      <button class="tool-btn" data-tool="move" title="Move">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="5 9 2 12 5 15"/><polyline points="9 5 12 2 15 5"/><polyline points="15 19 12 22 9 19"/><polyline points="19 9 22 12 19 15"/><line x1="2" y1="12" x2="22" y2="12"/><line x1="12" y1="2" x2="12" y2="22"/></svg>
-      </button>
-      <div class="tool-sep"></div>
-      <button class="tool-btn" id="btnAddLayer" title="Add Layer">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-      </button>
-      <button class="tool-btn" id="btnDuplicate" title="Duplicate">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
-      </button>
-      <button class="tool-btn" id="btnDelete" title="Delete">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/></svg>
-      </button>
-      <div class="tool-sep"></div>
-      <button class="tool-btn" id="btnUndo" title="Undo">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 7v6h6"/><path d="M21 17a9 9 0 0 0-9-9 9 9 0 0 0-6.7 3L3 13"/></svg>
-      </button>
-      <button class="tool-btn" id="btnRedo" title="Redo">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 7v6h-6"/><path d="M3 17a9 9 0 0 1 9-9 9 9 0 0 1 6.7 3L21 13"/></svg>
-      </button>
-    </aside>
-
-    <!-- CANVAS -->
-    <div class="canvas-area" id="canvasArea">
-      <div class="canvas-info" id="canvasInfo">1280 × 720 • 30 FPS</div>
-      <div class="canvas-wrap" id="canvasWrap">
-        <canvas id="preview" width="1280" height="720"></canvas>
-      </div>
-    </div>
-
-    <!-- RIGHT PANEL -->
-    <aside class="panel" id="panel">
-      <div class="panel-tabs">
-        <button class="tab active" data-tab="text">Text</button>
-        <button class="tab" data-tab="style">Style</button>
-        <button class="tab" data-tab="effects">Effects</button>
-        <button class="tab" data-tab="animate">Animate</button>
-        <button class="tab" data-tab="bg">BG</button>
-        <button class="tab" data-tab="filter">Filter</button>
-        <button class="tab" data-tab="layers">Layers</button>
-      </div>
-      <div class="panel-body">
-
-        <!-- TEXT TAB -->
-        <div class="panel-section active" data-section="text">
-          <div class="section-title">Content</div>
-          <div class="field">
-            <textarea class="textarea" id="textContent" placeholder="Type your text...">HELLO WORLD</textarea>
-          </div>
-
-          <div class="section-title">Font</div>
-          <div class="field">
-            <select class="select" id="fontFamily">
-              <optgroup label="System">
-                <option value="Inter">Inter</option>
-                <option value="Arial">Arial</option>
-                <option value="Georgia">Georgia</option>
-                <option value="Times New Roman">Times New Roman</option>
-                <option value="Courier New">Courier New</option>
-                <option value="Verdana">Verdana</option>
-              </optgroup>
-              <optgroup label="Google Fonts">
-                <option value="Orbitron">Orbitron</option>
-                <option value="Bebas Neue">Bebas Neue</option>
-                <option value="Pacifico">Pacifico</option>
-                <option value="Permanent Marker">Permanent Marker</option>
-                <option value="Press Start 2P">Press Start 2P</option>
-                <option value="Righteous">Righteous</option>
-                <option value="Russo One">Russo One</option>
-                <option value="Monoton">Monoton</option>
-                <option value="Audiowide">Audiowide</option>
-              </optgroup>
-            </select>
-          </div>
-          <div class="field">
-            <div class="field-label">Import Font <button class="btn" id="btnImportFont" style="padding:3px 8px;font-size:10px">+ Add</button></div>
-            <input type="text" class="input" id="importFontName" placeholder="Font name (e.g. Roboto)" />
-          </div>
-
-          <div class="field">
-            <div class="field-label">Size <span class="val" id="fontSizeVal">72</span></div>
-            <div class="slider-wrap">
-              <input type="range" id="fontSize" min="8" max="300" value="72" />
-            </div>
-          </div>
-          <div class="field">
-            <div class="field-label">Letter Spacing <span class="val" id="letterSpacingVal">0</span></div>
-            <div class="slider-wrap">
-              <input type="range" id="letterSpacing" min="-20" max="50" value="0" />
-            </div>
-          </div>
-          <div class="field">
-            <div class="field-label">Line Height <span class="val" id="lineHeightVal">1.2</span></div>
-            <div class="slider-wrap">
-              <input type="range" id="lineHeight" min="0.5" max="3" step="0.1" value="1.2" />
-            </div>
-          </div>
-
-          <div class="section-title">Style</div>
-          <div class="btn-group mb-8">
-            <button class="btn" id="boldBtn">B</button>
-            <button class="btn" id="italicBtn" style="font-style:italic">I</button>
-            <button class="btn" id="underlineBtn" style="text-decoration:underline">U</button>
-            <button class="btn" id="upperBtn">AA</button>
-          </div>
-
-          <div class="section-title">Alignment</div>
-          <div class="btn-group mb-8">
-            <button class="btn" data-align="left">⬅</button>
-            <button class="btn active" data-align="center">⬌</button>
-            <button class="btn" data-align="right">➡</button>
-          </div>
-
-          <div class="section-title">Colors</div>
-          <div class="field">
-            <div class="field-label">Text Color</div>
-            <div class="color-row">
-              <input type="color" class="color-input" id="textColor" value="#ffffff" />
-              <input type="text" class="input" id="textColorHex" value="#ffffff" />
-            </div>
-          </div>
-          <div class="field">
-            <label class="row" style="font-size:12px">
-              <input type="checkbox" id="useGradient" /> Use Gradient Text
-            </label>
-          </div>
-          <div class="field" id="gradientFields" style="display:none">
-            <div class="field-label">Gradient</div>
-            <div class="color-row mb-8">
-              <input type="color" class="color-input" id="gradColor1" value="#00ff66" />
-              <input type="color" class="color-input" id="gradColor2" value="#00b3ff" />
-              <select class="select" id="gradDir" style="flex:1">
-                <option value="to right">Horizontal</option>
-                <option value="to bottom">Vertical</option>
-                <option value="to bottom right">Diagonal</option>
-                <option value="radial">Radial</option>
-              </select>
-            </div>
-          </div>
-          <div class="field">
-            <div class="field-label">Background Color</div>
-            <div class="color-row">
-              <input type="color" class="color-input" id="textBg" value="#000000" />
-              <label class="row" style="font-size:11px"><input type="checkbox" id="textBgOn" /> Enable</label>
-            </div>
-          </div>
-
-          <div class="section-title">Stroke &amp; Shadow</div>
-          <div class="field">
-            <div class="field-label">Stroke Width <span class="val" id="strokeWVal">0</span></div>
-            <input type="range" id="strokeW" min="0" max="20" value="0" />
-          </div>
-          <div class="field">
-            <div class="field-label">Stroke Color</div>
-            <input type="color" class="color-input" id="strokeColor" value="#000000" />
-          </div>
-          <div class="field">
-            <div class="field-label">Shadow Blur <span class="val" id="shadowBlurVal">0</span></div>
-            <input type="range" id="shadowBlur" min="0" max="80" value="0" />
-          </div>
-          <div class="field">
-            <div class="field-label">Shadow Color</div>
-            <input type="color" class="color-input" id="shadowColor" value="#000000" />
-          </div>
-          <div class="row">
-            <div class="field" style="flex:1">
-              <div class="field-label">Offset X <span class="val" id="shadowXVal">0</span></div>
-              <input type="range" id="shadowX" min="-50" max="50" value="0" />
-            </div>
-            <div class="field" style="flex:1">
-              <div class="field-label">Offset Y <span class="val" id="shadowYVal">0</span></div>
-              <input type="range" id="shadowY" min="-50" max="50" value="0" />
-            </div>
-          </div>
-
-          <div class="section-title">Transform</div>
-          <div class="row">
-            <div class="field" style="flex:1">
-              <div class="field-label">X <span class="val" id="posXVal">640</span></div>
-              <input type="range" id="posX" min="0" max="1280" value="640" />
-            </div>
-            <div class="field" style="flex:1">
-              <div class="field-label">Y <span class="val" id="posYVal">360</span></div>
-              <input type="range" id="posY" min="0" max="720" value="360" />
-            </div>
-          </div>
-          <div class="field">
-            <div class="field-label">Rotation <span class="val" id="rotVal">0°</span></div>
-            <input type="range" id="rotation" min="-180" max="180" value="0" />
-          </div>
-          <div class="field">
-            <div class="field-label">Opacity <span class="val" id="opacityVal">100%</span></div>
-            <input type="range" id="opacity" min="0" max="100" value="100" />
-          </div>
-        </div>
-
-        <!-- STYLE TAB (quick) -->
-        <div class="panel-section" data-section="style">
-          <div class="section-title">Quick Style</div>
-          <p style="font-size:12px;color:var(--text-dim);margin-bottom:12px">One-click styles — apply instantly to active layer.</p>
-          <div class="templates-grid">
-
-            <!-- Classic -->
-            <div class="tpl-card" data-quickstyle="bold-white" style="color:#fff;text-shadow:0 2px 8px rgba(0,0,0,.5)">
-              <span>Bold White</span>
-            </div>
-            <div class="tpl-card" data-quickstyle="clean-black" style="background:#fff;color:#111;border-color:#ddd">
-              <span>Clean Black</span>
-            </div>
-
-            <!-- Neon / Glow -->
-            <div class="tpl-card" data-quickstyle="neon-green" style="background:#001a0b;color:#00ff66;text-shadow:0 0 10px #00ff66,0 0 20px #00ff66">
-              <span>Neon Green</span>
-            </div>
-            <div class="tpl-card" data-quickstyle="neon-blue" style="background:#00101a;color:#00b3ff;text-shadow:0 0 10px #00b3ff,0 0 20px #00b3ff">
-              <span>Neon Blue</span>
-            </div>
-            <div class="tpl-card" data-quickstyle="neon-pink" style="background:#1a0010;color:#ff2d78;text-shadow:0 0 10px #ff2d78,0 0 24px #ff2d78">
-              <span>Neon Pink</span>
-            </div>
-
-            <!-- Gold / Fire -->
-            <div class="tpl-card" data-quickstyle="gold" style="background:linear-gradient(135deg,#1a1200,#2a1e00);color:#ffd700;text-shadow:0 2px 12px rgba(255,200,0,.5)">
-              <span>Gold</span>
-            </div>
-            <div class="tpl-card" data-quickstyle="fire" style="background:linear-gradient(135deg,#1a0000,#2a0800);color:#ff6a00;text-shadow:0 0 14px #ff6a00,0 0 4px #ffcc00">
-              <span>🔥 Fire</span>
-            </div>
-            <div class="tpl-card" data-quickstyle="ice" style="background:linear-gradient(135deg,#001828,#002838);color:#a0e8ff;text-shadow:0 0 14px #a0e8ff">
-              <span>❄️ Ice</span>
-            </div>
-
-            <!-- Gradient Text -->
-            <div class="tpl-card" data-quickstyle="sunset" style="background:linear-gradient(135deg,#12001a,#1a0010);color:#ff6a00;">
-              <span style="background:linear-gradient(90deg,#ff6a00,#ee0979);-webkit-background-clip:text;-webkit-text-fill-color:transparent">Sunset</span>
-            </div>
-            <div class="tpl-card" data-quickstyle="ocean" style="background:#000d1a;">
-              <span style="background:linear-gradient(90deg,#00b3ff,#00ff88);-webkit-background-clip:text;-webkit-text-fill-color:transparent">Ocean</span>
-            </div>
-            <div class="tpl-card" data-quickstyle="galaxy" style="background:linear-gradient(135deg,#0a001a,#001a2a);">
-              <span style="background:linear-gradient(90deg,#bf00ff,#00b3ff);-webkit-background-clip:text;-webkit-text-fill-color:transparent">Galaxy</span>
-            </div>
-
-            <!-- Retro / Cyber -->
-            <div class="tpl-card" data-quickstyle="cyber" style="background:#050a14;color:#0ff;font-family:monospace;text-shadow:0 0 6px #0ff,0 0 2px #fff">
-              <span>CYBER</span>
-            </div>
-            <div class="tpl-card" data-quickstyle="retro" style="background:#1a0a00;color:#ff9900;font-family:'Courier New',monospace;letter-spacing:2px">
-              <span>RETRO</span>
-            </div>
-
-            <!-- Minimal / Clean -->
-            <div class="tpl-card" data-quickstyle="minimal-white" style="background:#f8f8f8;color:#222;border:1px solid #ccc">
-              <span style="font-weight:300;letter-spacing:4px;font-size:10px">MINIMAL</span>
-            </div>
-            <div class="tpl-card" data-quickstyle="deep-shadow" style="color:#fff;text-shadow:4px 4px 0px #000,6px 6px 0px rgba(0,0,0,.4)">
-              <span>Deep Shadow</span>
-            </div>
-            <div class="tpl-card" data-quickstyle="outline-white" style="color:transparent;-webkit-text-stroke:1.5px #fff">
-              <span style="-webkit-text-stroke:1.5px #fff;color:transparent">OUTLINE</span>
-            </div>
-
-          </div>
-        </div>
-
-        <!-- EFFECTS TAB -->
-        <div class="panel-section" data-section="effects">
-          <div class="section-title">Text Effect Templates</div>
-          <div class="templates-grid" id="effectTemplates">
-            <div class="tpl-card" data-effect="none">None</div>
-            <div class="tpl-card" data-effect="neon">Neon</div>
-            <div class="tpl-card" data-effect="glow">Glow</div>
-            <div class="tpl-card" data-effect="shadow">Shadow</div>
-            <div class="tpl-card" data-effect="liquid">Liquid</div>
-            <div class="tpl-card" data-effect="fire">Fire</div>
-            <div class="tpl-card" data-effect="metallic">Metallic</div>
-            <div class="tpl-card" data-effect="glass">Glass</div>
-            <div class="tpl-card" data-effect="retro">Retro</div>
-            <div class="tpl-card" data-effect="glitch">Glitch</div>
-            <div class="tpl-card" data-effect="golden">Golden</div>
-            <div class="tpl-card" data-effect="outline">Outline</div>
-            <div class="tpl-card" data-effect="cyber">Cyber</div>
-            <div class="tpl-card" data-effect="modern">Modern</div>
-            <div class="tpl-card" data-effect="minimal">Minimal</div>
-            <div class="tpl-card" data-effect="3dpop">3D Pop</div>
-            <div class="tpl-card" data-effect="comic">Comic</div>
-          </div>
-        </div>
-
-        <!-- ANIMATE TAB -->
-        <div class="panel-section" data-section="animate">
-          <div class="section-title">Animation Templates</div>
-          <div class="templates-grid" id="animTemplates">
-            <div class="tpl-card" data-anim="none">None</div>
-            <div class="tpl-card" data-anim="fade-in">Fade In</div>
-            <div class="tpl-card" data-anim="fade-out">Fade Out</div>
-            <div class="tpl-card" data-anim="slide-left">Slide Left</div>
-            <div class="tpl-card" data-anim="slide-right">Slide Right</div>
-            <div class="tpl-card" data-anim="slide-up">Slide Up</div>
-            <div class="tpl-card" data-anim="slide-down">Slide Down</div>
-            <div class="tpl-card" data-anim="zoom-in">Zoom In</div>
-            <div class="tpl-card" data-anim="zoom-out">Zoom Out</div>
-            <div class="tpl-card" data-anim="blur-in">Blur In</div>
-            <div class="tpl-card" data-anim="blur-out">Blur Out</div>
-            <div class="tpl-card" data-anim="bounce">Bounce</div>
-            <div class="tpl-card" data-anim="typewriter">Typewriter</div>
-            <div class="tpl-card" data-anim="pop">Pop</div>
-            <div class="tpl-card" data-anim="pulse">Pulse</div>
-            <div class="tpl-card" data-anim="shake">Shake</div>
-            <div class="tpl-card" data-anim="wave">Wave</div>
-            <div class="tpl-card" data-anim="rotate">Rotate</div>
-            <div class="tpl-card" data-anim="flip">Flip</div>
-            <div class="tpl-card" data-anim="blur-reveal">Blur Reveal</div>
-            <div class="tpl-card" data-anim="glitch">Glitch</div>
-            <div class="tpl-card" data-anim="scale">Scale</div>
-            <div class="tpl-card" data-anim="elastic">Elastic</div>
-            <div class="tpl-card" data-anim="cinematic">Cinematic</div>
-            <div class="tpl-card" data-anim="fold">Fold</div>
-            <div class="tpl-card" data-anim="unfold">Unfold</div>
-            <div class="tpl-card" data-anim="up-down">Up→Down</div>
-            <div class="tpl-card" data-anim="down-up">Down→Up</div>
-            <div class="tpl-card" data-anim="left-right">Left→Right</div>
-            <div class="tpl-card" data-anim="right-left">Right→Left</div>
-          </div>
-
-          <div class="section-title">Animation Settings</div>
-          <div class="field">
-            <div class="field-label">Duration (s) <span class="val" id="animDurVal">1.0</span></div>
-            <input type="range" id="animDur" min="0.1" max="5" step="0.1" value="1" />
-          </div>
-          <div class="field">
-            <div class="field-label">Intensity <span class="val" id="animIntVal">50%</span></div>
-            <input type="range" id="animInt" min="0" max="100" value="50" />
-          </div>
-          <div class="field">
-            <div class="field-label">Delay (s) <span class="val" id="animDelayVal">0.0</span></div>
-            <input type="range" id="animDelay" min="0" max="5" step="0.1" value="0" />
-          </div>
-          <div class="field">
-            <div class="field-label">Easing</div>
-            <select class="select" id="animEase">
-              <option value="linear">Linear</option>
-              <option value="ease-in">Ease In</option>
-              <option value="ease-out" selected="">Ease Out</option>
-              <option value="ease-in-out">Ease In-Out</option>
-              <option value="bounce">Bounce</option>
-              <option value="elastic">Elastic</option>
-            </select>
-          </div>
-          <div class="field">
-            <label class="row" style="font-size:12px"><input type="checkbox" id="animLoop" /> Loop Animation</label>
-          </div>
-
-          <div class="section-title">Custom Templates</div>
-          <div class="row mb-8">
-            <button class="btn" id="btnSaveTpl">💾 Save Current</button>
-            <button class="btn" id="btnNewTpl">+ New Template</button>
-          </div>
-          <div id="customTplList"></div>
-        </div>
-
-        <!-- BACKGROUND TAB -->
-        <div class="panel-section" data-section="bg">
-          <div class="section-title">Background Type</div>
-          <div class="btn-group mb-8">
-            <button class="btn active" data-bgtype="solid">Solid</button>
-            <button class="btn" data-bgtype="gradient">Gradient</button>
-            <button class="btn" data-bgtype="image">Image</button>
-          </div>
-
-          <div class="field">
-            <div class="field-label">Background Color</div>
-            <div class="color-row">
-              <input type="color" class="color-input" id="bgColor" value="#00ff66" />
-              <input type="text" class="input" id="bgColorHex" value="#00ff66" />
-            </div>
-          </div>
-          <div class="field">
-            <div class="field-label">Opacity <span class="val" id="bgOpacityVal">100%</span></div>
-            <input type="range" id="bgOpacity" min="0" max="100" value="100" />
-          </div>
-
-          <div class="section-title">Gradient</div>
-          <div class="color-row mb-8">
-            <input type="color" class="color-input" id="bgGrad1" value="#00ff66" />
-            <input type="color" class="color-input" id="bgGrad2" value="#00b3ff" />
-          </div>
-          <div class="field">
-            <select class="select" id="bgGradDir">
-              <option value="to right">Horizontal</option>
-              <option value="to bottom">Vertical</option>
-              <option value="to bottom right">Diagonal</option>
-              <option value="radial">Radial</option>
-            </select>
-          </div>
-
-          <div class="section-title">Animation</div>
-          <div class="field">
-            <select class="select" id="bgAnim">
-              <option value="none">None</option>
-              <option value="pulse">Pulse</option>
-              <option value="rotate">Rotate</option>
-              <option value="shift">Color Shift</option>
-              <option value="gradient-move">Gradient Move</option>
-            </select>
-          </div>
-          <div class="field">
-            <div class="field-label">Anim Speed <span class="val" id="bgAnimSpeedVal">50%</span></div>
-            <input type="range" id="bgAnimSpeed" min="0" max="100" value="50" />
-          </div>
-
-          <div class="section-title">Image</div>
-          <div class="field">
-            <input type="file" id="bgImageInput" accept="image/*" style="font-size:11px" />
-          </div>
-
-          <button class="btn" id="btnResetBg" style="width:100%">Reset Background</button>
-        </div>
-
-        <!-- FILTER TAB -->
-        <div class="panel-section" data-section="filter">
-          <div class="section-title">Image / Canvas Filters</div>
-          <div class="field">
-            <div class="field-label">Brightness <span class="val" id="fBrightVal">100%</span></div>
-            <input type="range" id="fBright" min="0" max="200" value="100" />
-          </div>
-          <div class="field">
-            <div class="field-label">Contrast <span class="val" id="fContrastVal">100%</span></div>
-            <input type="range" id="fContrast" min="0" max="200" value="100" />
-          </div>
-          <div class="field">
-            <div class="field-label">Darkness <span class="val" id="fDarkVal">0%</span></div>
-            <input type="range" id="fDark" min="0" max="100" value="0" />
-          </div>
-          <div class="field">
-            <div class="field-label">Blur <span class="val" id="fBlurVal">0</span></div>
-            <input type="range" id="fBlur" min="0" max="20" value="0" />
-          </div>
-          <div class="field">
-            <div class="field-label">Opacity <span class="val" id="fOpacityVal">100%</span></div>
-            <input type="range" id="fOpacity" min="0" max="100" value="100" />
-          </div>
-          <div class="field">
-            <div class="field-label">Sepia <span class="val" id="fSepiaVal">0%</span></div>
-            <input type="range" id="fSepia" min="0" max="100" value="0" />
-          </div>
-          <div class="field">
-            <div class="field-label">Warmth <span class="val" id="fWarmVal">0</span></div>
-            <input type="range" id="fWarm" min="-100" max="100" value="0" />
-          </div>
-          <div class="field">
-            <div class="field-label">Tint <span class="val" id="fTintVal">0</span></div>
-            <input type="range" id="fTint" min="-100" max="100" value="0" />
-          </div>
-          <div class="field">
-            <div class="field-label">Hue Rotate <span class="val" id="fHueVal">0°</span></div>
-            <input type="range" id="fHue" min="0" max="360" value="0" />
-          </div>
-          <button class="btn" id="btnResetFilters" style="width:100%">Reset Filters</button>
-        </div>
-
-        <!-- LAYERS TAB -->
-        <div class="panel-section" data-section="layers">
-          <div class="section-title">Layers</div>
-          <div id="layersList"></div>
-        </div>
-
-      </div>
-    </aside>
-
-    <!-- TIMELINE -->
-    <div class="timeline">
-      <div class="timeline-toolbar">
-        <div class="play-controls">
-          <button class="btn btn-icon" id="btnStop" title="Stop">
-            <svg viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="6" width="12" height="12"/></svg>
-          </button>
-          <button class="btn btn-icon primary" id="btnPlay" title="Play">
-            <svg viewBox="0 0 24 24" fill="currentColor" id="playIcon"><polygon points="6 4 20 12 6 20 6 4"/></svg>
-          </button>
-          <button class="btn btn-icon" id="btnLoop" title="Loop">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
-          </button>
-        </div>
-        <div class="time-display" id="timeDisplay">00:00.00 / 00:05.00</div>
-        <div class="timeline-right">
-          <label>FPS</label>
-          <select id="fpsSel">
-            <option>24</option><option selected="">30</option><option>60</option>
-          </select>
-          <label>Dur</label>
-          <select id="durSel">
-            <option value="3">3s</option>
-            <option value="5" selected="">5s</option>
-            <option value="10">10s</option>
-            <option value="15">15s</option>
-            <option value="30">30s</option>
-            <option value="60">60s</option>
-          </select>
-          <label>Zoom</label>
-          <input type="range" id="tlZoom" min="20" max="200" value="60" style="width:80px" />
-          <label><input type="checkbox" id="snapMode" checked="" /> Snap</label>
-        </div>
-      </div>
-      <div class="timeline-body">
-        <div class="timeline-labels" id="tlLabels"></div>
-        <div class="timeline-tracks-wrap" id="tlTracksWrap">
-          <canvas class="timeline-ruler" id="tlRuler"></canvas>
-          <div class="timeline-tracks" id="tlTracks"></div>
-          <div class="tl-playhead" id="tlPlayhead" style="left:0"></div>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- Mobile panel toggle -->
-<button class="mobile-toggle" id="mobileToggle">
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="18" x2="20" y2="18"/></svg>
-</button>
-
-<!-- Export Modal -->
-<div class="modal-backdrop" id="exportModal">
-  <div class="modal">
-    <div class="modal-header">
-      <div class="modal-title">Export Project</div>
-      <button class="btn btn-icon ghost" data-close="">✕</button>
-    </div>
-    <div class="modal-body">
-      <div class="field">
-        <div class="field-label">Resolution</div>
-        <select class="select" id="expRes">
-          <option value="640x360">640 × 360 (SD)</option>
-          <option value="1280x720" selected="">1280 × 720 (HD)</option>
-          <option value="1920x1080">1920 × 1080 (FHD)</option>
-          <option value="1080x1920">1080 × 1920 (Vertical)</option>
-          <option value="1080x1080">1080 × 1080 (Square)</option>
-        </select>
-      </div>
-      <div class="field">
-        <div class="field-label">Format</div>
-        <select class="select" id="expFormat">
-          <option value="mp4">MP4 Video (WebM fallback)</option>
-          <option value="webm">WebM Video</option>
-          <option value="png">PNG Frame</option>
-          <option value="json">Project (.json)</option>
-        </select>
-      </div>
-      <div class="field">
-        <div class="field-label">Quality</div>
-        <select class="select" id="expQuality">
-          <option value="4000000">Low (4 Mbps)</option>
-          <option value="8000000" selected="">Medium (8 Mbps)</option>
-          <option value="16000000">High (16 Mbps)</option>
-        </select>
-      </div>
-      <div id="exportProgress" style="display:none">
-        <div class="field-label">Rendering... <span class="val" id="expProgVal">0%</span></div>
-        <div style="height:6px;background:var(--bg-3);border-radius:3px;overflow:hidden">
-          <div id="expProgBar" style="height:100%;width:0;background:var(--accent);transition:width .2s"></div>
-        </div>
-      </div>
-    </div>
-    <div class="modal-footer">
-      <button class="btn" data-close="">Cancel</button>
-      <button class="btn primary" id="btnStartExport">Start Export</button>
-    </div>
-  </div>
-</div>
-
-<!-- Settings Modal -->
-<div class="modal-backdrop" id="settingsModal">
-  <div class="modal">
-    <div class="modal-header">
-      <div class="modal-title">Settings</div>
-      <button class="btn btn-icon ghost" data-close="">✕</button>
-    </div>
-    <div class="modal-body">
-      <div class="field">
-        <div class="field-label">Canvas Size</div>
-        <select class="select" id="setCanvasSize">
-          <option value="1280x720" selected="">1280 × 720 (16:9)</option>
-          <option value="1920x1080">1920 × 1080 (16:9 FHD)</option>
-          <option value="1080x1920">1080 × 1920 (9:16)</option>
-          <option value="1080x1080">1080 × 1080 (1:1)</option>
-          <option value="800x600">800 × 600 (4:3)</option>
-        </select>
-      </div>
-      <div class="field">
-        <label class="row" style="font-size:12px"><input type="checkbox" id="setAutosave" checked="" /> Autosave to LocalStorage</label>
-      </div>
-      <div class="field">
-        <label class="row" style="font-size:12px"><input type="checkbox" id="setShowGrid" checked="" /> Show Canvas Grid</label>
-      </div>
-      <div class="divider"></div>
-      <button class="btn danger" id="btnClearStorage" style="width:100%">Clear All LocalStorage</button>
-    </div>
-    <div class="modal-footer">
-      <button class="btn" data-close="">Close</button>
-    </div>
-  </div>
-</div>
-
-<!-- Load Modal -->
-<div class="modal-backdrop" id="loadModal">
-  <div class="modal">
-    <div class="modal-header">
-      <div class="modal-title">Load Project</div>
-      <button class="btn btn-icon ghost" data-close="">✕</button>
-    </div>
-    <div class="modal-body">
-      <div class="field">
-        <input type="file" id="loadFile" accept=".json,application/json" />
-      </div>
-      <div class="divider"></div>
-      <div class="section-title">Recent Autosaves</div>
-      <div id="autosaveList"></div>
-    </div>
-  </div>
-</div>
-
-<!-- Toast Container -->
-<div class="toast-wrap" id="toastWrap"></div>
-
-<input type="file" id="hiddenFileInput" accept=".json" style="display:none" />
-
-
+    
 
 <script src="script.js"></script></body></html>
