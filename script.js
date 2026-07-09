@@ -793,3 +793,20 @@
                 }
             }
         });
+
+        function toggleTheme() {
+            const body = document.body;
+            const themeIcon = document.getElementById('themeIcon');
+            const themeToggleBtn = document.getElementById('themeToggleBtn');
+            const btnText = themeToggleBtn.querySelector('span:last-child');
+            
+            if (body.getAttribute('data-theme') === 'light') {
+                body.removeAttribute('data-theme');
+                themeIcon.textContent = '🌙';
+                if (btnText) btnText.textContent = 'Night';
+            } else {
+                body.setAttribute('data-theme', 'light');
+                themeIcon.textContent = '☀️';
+                if (btnText) btnText.textContent = 'Day';
+            }
+        }
