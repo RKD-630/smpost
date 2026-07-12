@@ -1,262 +1,588 @@
-<!DOCTYPE html><html lang="en"><head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <title>Social Media Image Creator</title>
-    
-<link rel="stylesheet" href="style.css" /></head>
-<body>
-    <div class="loading" id="loading">
-        <div class="spinner"></div>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PostCraft – Social Media Post Designer</title>
+  <meta name="description" content="Design stunning social media posts with rich background, image, and text controls. Export for Instagram, Facebook, Twitter & WhatsApp." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Cinzel:wght@400;700&family=Dancing+Script:wght@400;700&family=Inter:wght@300;400;500;600;700&family=Montserrat:wght@400;600;700;900&family=Oswald:wght@400;700&family=Outfit:wght@400;600;700&family=Pacifico&family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Righteous&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body data-theme="light">
+  <!-- Top Nav -->
+  <header class="topbar">
+    <div class="topbar-brand">
+      <button class="mobile-menu-btn" id="btnMobileMenu">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+      <svg width="32" height="32" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg" style="filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2)); pointer-events: none; user-select: none;" draggable="false">
+        <defs>
+          <linearGradient id="logoGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#d946ef" />
+            <stop offset="100%" stop-color="#06b6d4" />
+          </linearGradient>
+        </defs>
+        <path d="M100 100 L256 450 L412 100 H330 L256 260 L182 100 H100Z" fill="url(#logoGrad)" />
+        <path d="M150 350 C 150 350, 250 450, 500 220" stroke="#06b6d4" stroke-width="25" stroke-linecap="round" fill="none" />
+      </svg>
+      <span class="brand-name" style="background: linear-gradient(90deg, #d946ef, #06b6d4); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">PostCraft</span>
     </div>
 
-    <div class="toast" id="toast"></div>
-
-
-
-    <header class="header">
-        <div class="header-buttons">
-            <button class="import-btn" onclick="document.getElementById('importAll').click()">
-                📁 Import
-            </button>
-            <input type="file" id="importAll" multiple="" accept="image/*" onchange="handleImportAll(event)" style="display: none;" />
-            
-            <select id="platformSelect" class="header-select" onchange="const args = this.value.split(','); setPlatform(args[0], parseInt(args[1]), parseInt(args[2])); adjustSelectWidth(this);">
-                <option value="Facebook,1200,630">Facebook</option>
-                <option value="WhatsApp,1080,1080">WhatsApp</option>
-                <option value="Twitter,1200,675">Twitter</option>
-                <option value="Instagram,1080,1080">Instagram</option>
-                <option value="Story,1080,1920">Story</option>
-            </select>
-
-            <select id="formatSelect" class="header-select" onchange="setFormat(this.value); adjustSelectWidth(this);">
-                <option value="png">PNG</option>
-                <option value="jpg">JPG</option>
-                <option value="webp">WebP</option>
-            </select>
-
-            <button class="save-btn" onclick="saveImage()">
-                💾 Save
-            </button>
-            
-            <button id="themeToggleBtn" class="header-select" onclick="toggleTheme()" style="background: var(--secondary-bg); display: flex; align-items: center; gap: 0.5rem; justify-content: center; margin-left: auto;">
-                <span id="themeIcon">🌙</span> <span>Night</span>
-            </button>
-        </div>
-    </header>
-
-    <div class="container">
-        <!-- Canvas Area -->
-        <div class="canvas-container">
-            <div class="canvas-wrapper" id="canvasWrapper">
-                <canvas id="mainCanvas" width="1200" height="630"></canvas>
-            </div>
-        </div>
-
-        <!-- Right Sidebar - Controls -->
-        <aside class="sidebar-right active">
-            <div class="drag-handle-container" id="dragHandle">
-                <div class="drag-handle"></div>
-            </div>
-            <!-- Background Section -->
-            <div class="control-section active" id="tab-bg">
-                <h3 class="section-title">Background</h3>
-                
-                <div style="display: flex; gap: 1rem; align-items: stretch; justify-content: space-between;">
-                    <div class="control-group" style="margin-bottom: 0; display: flex; flex-direction: column; align-items: center; gap: 0.25rem;">
-                        <label class="control-label" style="margin-bottom: 0; font-size: 0.75rem;">Color 1</label>
-                        <input type="color" id="gradientColor1" value="#667eea" onchange="updateBackground()" style="width: 36px; height: 36px; padding: 0; border: none; border-radius: 4px; cursor: pointer;" />
-                    </div>
-
-                    <div class="control-group" style="margin-bottom: 0; display: flex; flex-direction: column; align-items: center; gap: 0.25rem;">
-                        <label class="control-label" style="margin-bottom: 0; font-size: 0.75rem;">Color 2</label>
-                        <input type="color" id="gradientColor2" value="#764ba2" onchange="updateBackground()" style="width: 36px; height: 36px; padding: 0; border: none; border-radius: 4px; cursor: pointer;" />
-                    </div>
-
-                    <div class="control-group" style="margin-bottom: 0; flex: 1;">
-                        <label class="file-label" onclick="document.getElementById('bgImage').click()" style="padding: 0.5rem; display: flex; align-items: center; justify-content: center; height: 100%; font-size: 0.85rem; margin: 0;">
-                            📤 Upload BG
-                        </label>
-                        <input type="file" id="bgImage" accept="image/*" onchange="handleBgImage(event)" style="display: none;" />
-                    </div>
-                </div>
-            </div>
-
-            <!-- Image Adjustments -->
-            <div class="control-section" id="tab-adjust">
-                <h3 class="section-title">Image Adjustments</h3>
-                
-                <div class="control-group">
-                    <label class="control-label">
-                        Size <span class="range-value" id="sizeValue">100%</span>
-                    </label>
-                    <input type="range" id="imgSize" min="0" max="200" value="100" oninput="updateImageAdjustments()" />
-                </div>
-
-                <div class="template-grid" id="adjustOptionButtons" style="margin-bottom: 1.5rem; grid-template-columns: repeat(3, 1fr); gap: 0.5rem;">
-                    <button class="template-btn active" data-adjust="contrast" style="font-size: 0.75rem; padding: 0.5rem; min-height: unset;">Contrast</button>
-                    <button class="template-btn" data-adjust="brightness" style="font-size: 0.75rem; padding: 0.5rem; min-height: unset;">Brightness</button>
-                    <button class="template-btn" data-adjust="darkness" style="font-size: 0.75rem; padding: 0.5rem; min-height: unset;">Darkness</button>
-                    <button class="template-btn" data-adjust="blur" style="font-size: 0.75rem; padding: 0.5rem; min-height: unset;">Blur</button>
-                    <button class="template-btn" data-adjust="opacity" style="font-size: 0.75rem; padding: 0.5rem; min-height: unset;">Opacity</button>
-                    <button class="template-btn" data-adjust="sepia" style="font-size: 0.75rem; padding: 0.5rem; min-height: unset;">Sepia</button>
-                    <button class="template-btn" data-adjust="warmth" style="font-size: 0.75rem; padding: 0.5rem; min-height: unset;">Warmth</button>
-                    <button class="template-btn" data-adjust="tint" style="font-size: 0.75rem; padding: 0.5rem; min-height: unset;">Tint</button>
-                    <button class="template-btn" data-adjust="hue" style="font-size: 0.75rem; padding: 0.5rem; min-height: unset;">Hue Rotate</button>
-                </div>
-
-                <div class="control-group" id="masterSliderGroup">
-                    <label class="control-label">
-                        <span id="masterAdjustLabel">Contrast</span> <span class="range-value" id="masterAdjustValue">100%</span>
-                    </label>
-                    <input type="range" id="masterAdjustSlider" min="0" max="200" value="100" />
-                </div>
-
-                <div style="display: none;">
-                    <input type="range" id="contrast" min="0" max="200" value="100" />
-                    <input type="range" id="brightness" min="0" max="200" value="100" />
-                    <input type="range" id="darkness" min="0" max="100" value="0" />
-                    <input type="range" id="blur" min="0" max="20" value="0" />
-                    <input type="range" id="opacity" min="0" max="100" value="100" />
-                    <input type="range" id="sepia" min="0" max="100" value="0" />
-                    <input type="range" id="warmth" min="-100" max="100" value="0" />
-                    <input type="range" id="tint" min="-100" max="100" value="0" />
-                    <input type="range" id="hue" min="0" max="360" value="0" />
-                </div>
-            </div>
-
-            <!-- Text Effect Templates -->
-            <div class="control-section" id="tab-effects">
-                <h3 class="section-title">Text Effect Templates</h3>
-                <div class="template-grid">
-                    <button class="template-btn neon" onclick="applyTextTemplate('neon')">✨ Neon Glow</button>
-                    <button class="template-btn gold" onclick="applyTextTemplate('gold')">🏆 Gold</button>
-                    <button class="template-btn outline" onclick="applyTextTemplate('outline')">⭕ Outline</button>
-                    <button class="template-btn shadow" onclick="applyTextTemplate('shadow')">🌑 3D Shadow</button>
-                    <button class="template-btn gradient" onclick="applyTextTemplate('gradient')">🌈 Gradient</button>
-                    <button class="template-btn" onclick="applyTextTemplate('retro')" style="background: #ff6b6b; color: white;">📼 Retro</button>
-                    <button class="template-btn" onclick="applyTextTemplate('cyber')" style="background: #00d9ff; color: #000;">🤖 Cyber</button>
-                    <button class="template-btn" onclick="applyTextTemplate('elegant')" style="background: linear-gradient(135deg, #667eea, #764ba2);">💎 Elegant</button>
-                </div>
-            </div>
-
-            <!-- Text Tools -->
-            <div class="control-section" id="tab-text" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.75rem; align-items: end;">
-                <h3 class="section-title" style="grid-column: 1 / -1; margin-bottom: 0;">Text Tools</h3>
-                
-                <div class="control-group" style="grid-column: 1 / -1; margin-bottom: 0;">
-                    <label class="control-label">Text Content</label>
-                    <textarea id="textContent" placeholder="Enter your text here..." oninput="updateText()" style="min-height: 60px;"></textarea>
-                </div>
-
-                <div class="control-group" style="grid-column: span 2; margin-bottom: 0;">
-                    <label class="control-label">Font Family</label>
-                    <select id="fontFamily" onchange="updateText()" style="width: 100%; padding: 0.5rem; border-radius: 8px; border: 1px solid var(--border-color); background: var(--secondary-bg); color: var(--text-primary);">
-                        <option value="Arial">Arial</option>
-                        <option value="Helvetica">Helvetica</option>
-                        <option value="Times New Roman">Times New Roman</option>
-                        <option value="Georgia">Georgia</option>
-                        <option value="Verdana">Verdana</option>
-                        <option value="Courier New">Courier New</option>
-                        <option value="Impact">Impact</option>
-                        <option value="Comic Sans MS">Comic Sans MS</option>
-                    </select>
-                </div>
-
-                <div class="control-group" style="margin-bottom: 0; display: flex; flex-direction: column; width: 100%;">
-                    <label class="control-label">Text Color</label>
-                    <input type="color" id="textColor" value="#ffffff" onchange="updateText()" style="width: 100%; height: 36px; padding: 0; border: none; border-radius: 4px; cursor: pointer;" />
-                </div>
-
-                <div class="control-group" style="grid-column: 1 / -1; margin-bottom: 0;">
-                    <label class="control-label">
-                        Text Size <span class="range-value" id="textSizeValue">48px</span>
-                    </label>
-                    <input type="range" id="textSize" min="12" max="120" value="48" oninput="updateText()" />
-                </div>
-
-                <div class="control-group" style="grid-column: 1 / -1; margin-bottom: 0;">
-                    <label class="control-label">Styling</label>
-                    <div class="text-controls" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem;">
-                        <button class="text-btn" id="boldBtn" onclick="toggleTextStyle('bold')">B</button>
-                        <button class="text-btn" id="italicBtn" onclick="toggleTextStyle('italic')">I</button>
-                        <button class="text-btn" id="underlineBtn" onclick="toggleTextStyle('underline')">U</button>
-                    </div>
-                </div>
-
-                <div class="control-group" style="grid-column: 1 / -1; margin-bottom: 0;">
-                    <label class="control-label">Alignment</label>
-                    <div class="align-controls" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem;">
-                        <button class="align-btn active" id="alignLeft" onclick="setTextAlign('left')">⬅ Left</button>
-                        <button class="align-btn" id="alignCenter" onclick="setTextAlign('center')">⬆ Center</button>
-                        <button class="align-btn" id="alignRight" onclick="setTextAlign('right')">➡ Right</button>
-                    </div>
-                </div>
-
-                <div class="control-group" style="margin-bottom: 0; align-self: center;">
-                    <div class="toggle-switch">
-                        <span class="control-label" style="margin: 0; font-size: 0.85rem;">Text BG</span>
-                        <div class="toggle" id="textBgToggle" onclick="toggleTextBackground()">
-                            <div class="toggle-slider"></div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="control-group" id="textBgColorGroup" style="display: none; margin-bottom: 0; width: 100%;">
-                    <label class="control-label" style="font-size: 0.85rem;">BG Color</label>
-                    <input type="color" id="textBgColor" value="#000000" onchange="updateText()" style="width: 100%; height: 36px; padding: 0; border: none; border-radius: 4px; cursor: pointer;" />
-                </div>
-
-                <div class="control-group" style="margin-bottom: 0; display: flex; flex-direction: column; width: 100%;">
-                    <label class="control-label" style="font-size: 0.85rem;">Shadow</label>
-                    <input type="color" id="shadowColor" value="#000000" onchange="updateText()" style="width: 100%; height: 36px; padding: 0; border: none; border-radius: 4px; cursor: pointer;" />
-                </div>
-
-                <div class="control-group" style="grid-column: 1 / -1; margin-bottom: 0;">
-                    <label class="control-label">
-                        Shadow Blur <span class="range-value" id="shadowBlurValue">0px</span>
-                    </label>
-                    <input type="range" id="shadowBlur" min="0" max="50" value="0" oninput="updateText()" />
-                </div>
-            </div>
-
-            <!-- Settings -->
-            <div class="control-section" id="tab-settings">
-                <h3 class="section-title">Settings</h3>
-                <div class="control-group">
-                    <label class="control-label">Mobile Sidebar Position</label>
-                    <select id="sidebarPosition" onchange="toggleSidebarPosition(this.value)" style="width: 100%; padding: 0.5rem; background: var(--primary-bg); color: var(--text-primary); border: 1px solid var(--border-color); border-radius: 6px;">
-                        <option value="bottom">Bottom Sheet</option>
-                        <option value="right">Right Side</option>
-                    </select>
-                </div>
-            </div>
-        </aside>
+    <div class="topbar-mode">
+      <div class="btn-group">
+        <button class="btn-option active" id="modePost">Post</button>
+        <button class="btn-option" id="modeCover">Cover</button>
+      </div>
     </div>
 
-    <!-- Bottom Navigation for Mobile -->
-    <nav class="bottom-nav">
-        <button class="nav-tab active" data-tab="tab-bg">
-            <span style="font-size: 1.25rem;">🖼️</span>
-            <span>BG</span>
-        </button>
-        <button class="nav-tab" data-tab="tab-adjust">
-            <span style="font-size: 1.25rem;">🎛️</span>
-            <span>Adjust</span>
-        </button>
-        <button class="nav-tab" data-tab="tab-effects">
-            <span style="font-size: 1.25rem;">✨</span>
-            <span>Effects</span>
-        </button>
-        <button class="nav-tab" data-tab="tab-text">
-            <span style="font-size: 1.25rem;">📝</span>
-            <span>Text</span>
-        </button>
-        <button class="nav-tab" data-tab="tab-settings">
-            <span style="font-size: 1.25rem;">⚙️</span>
-            <span>Settings</span>
-        </button>
-    </nav>
+    <div class="ratio-selector" id="ratioSelector">
+      <button class="ratio-btn active" data-ratio="1:1" title="Square">1:1</button>
+      <button class="ratio-btn" data-ratio="4:5" title="Portrait">4:5</button>
+      <button class="ratio-btn" data-ratio="16:9" title="Landscape">16:9</button>
+      <button class="ratio-btn" data-ratio="9:16" title="Story">9:16</button>
+    </div>
 
-    
+    <div class="topbar-actions">
+      <div class="export-group">
+        <button class="btn-secondary" id="btnFullscreen" title="Full Screen" style="padding: 8px;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"></path></svg>
+        </button>
+        <button class="btn-secondary" id="btnThemeToggle" title="Toggle Theme" style="padding: 8px;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" id="iconThemeMoon"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" id="iconThemeSun" style="display: none;"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+        </button>
+        <button class="btn-primary" id="btnExportPNG">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7,10 12,15 17,10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          PNG
+        </button>
+        <button class="btn-secondary" id="btnExportJPG">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7,10 12,15 17,10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          JPG
+        </button>
+      </div>
+      <div class="platform-group" id="platformGroup">
+        <span class="platform-label">Optimize:</span>
+        <button class="platform-btn" data-platform="instagram" title="Instagram 1:1">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
+        </button>
+        <button class="platform-btn" data-platform="facebook" title="Facebook">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+        </button>
+        <button class="platform-btn" data-platform="twitter" title="Twitter/X">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.746l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+        </button>
+        <button class="platform-btn" data-platform="whatsapp" title="WhatsApp">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+        </button>
+        <button class="platform-btn" data-platform="youtube" title="YouTube">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.377.505 9.377.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
+        </button>
+      </div>
+    </div>
+  </header>
 
-<script src="script.js"></script></body></html>
+  <!-- Main Layout -->
+  <div class="app-layout">
+    <!-- Left Sidebar – Controls -->
+    <aside class="sidebar left-sidebar" id="leftSidebar">
+      <div class="sidebar-tabs">
+        <button class="sidebar-tab active" data-panel="background" id="tabBg">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21,15 16,10 5,21"/></svg>
+          <span>BG</span>
+        </button>
+        <button class="sidebar-tab" data-panel="image" id="tabImg">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
+          <span>Adjust/Effect</span>
+        </button>
+        <button class="sidebar-tab" data-panel="text" id="tabText">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="4,7 4,4 20,4 20,7"/><line x1="9" y1="20" x2="15" y2="20"/><line x1="12" y1="4" x2="12" y2="20"/></svg>
+          <span>Text</span>
+        </button>
+        <button class="sidebar-tab" data-panel="layers" id="tabLayers">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12,2 2,7 12,12 22,7"/><polyline points="2,17 12,22 22,17"/><polyline points="2,12 12,17 22,12"/></svg>
+          <span>Layers</span>
+        </button>
+      </div>
+
+      <div class="drag-handle-container tabs-drag-handle" id="tabsDragHandle">
+        <div class="drag-handle"></div>
+      </div>
+
+      <div class="panels-wrapper" id="mobilePanelsWrapper">
+        <div class="drag-handle-container panel-drag-handle" id="panelDragHandle">
+          <div class="drag-handle"></div>
+        </div>
+
+      <!-- Background Panel -->
+      <div class="panel active" id="panelBackground">
+        <div class="panel-section">
+          <h3 class="section-title">Background Type</h3>
+          <div class="bg-type-selector">
+            <button class="bg-type-btn active" data-bgtype="solid" id="bgTypeSolid">Solid</button>
+            <button class="bg-type-btn" data-bgtype="gradient" id="bgTypeGradient">Gradient</button>
+            <button class="bg-type-btn" data-bgtype="image" id="bgTypeImage">Image</button>
+          </div>
+        </div>
+
+        <!-- Solid Color -->
+        <div class="panel-section" id="bgSolidSection">
+          <h3 class="section-title">Solid Color</h3>
+          <div class="color-row">
+            <input type="color" class="color-picker" id="bgSolidColor" value="#1a1a2e" />
+            <span class="color-label" id="bgSolidColorLabel">#1a1a2e</span>
+          </div>
+        </div>
+
+        <!-- Gradient -->
+        <div class="panel-section hidden" id="bgGradientSection">
+          <h3 class="section-title">Gradient</h3>
+          <div class="control-row">
+            <label class="control-label">Angle</label>
+            <div class="slider-wrap">
+              <input type="range" class="slider" id="gradAngle" min="0" max="360" value="135" />
+              <span class="slider-val" id="gradAngleVal">135°</span>
+            </div>
+          </div>
+          <div class="grad-stops" id="gradStops">
+            <div class="grad-stop-row">
+              <span class="stop-num">Stop 1</span>
+              <input type="color" class="color-picker" id="gradColor1" value="#7c3aed" />
+              <input type="range" class="slider sm" id="gradPos1" min="0" max="100" value="0" />
+              <span class="slider-val sm" id="gradPos1Val">0%</span>
+            </div>
+            <div class="grad-stop-row">
+              <span class="stop-num">Stop 2</span>
+              <input type="color" class="color-picker" id="gradColor2" value="#ec4899" />
+              <input type="range" class="slider sm" id="gradPos2" min="0" max="100" value="100" />
+              <span class="slider-val sm" id="gradPos2Val">100%</span>
+            </div>
+            <div class="grad-stop-row hidden" id="gradStop3Row">
+              <span class="stop-num">Stop 3</span>
+              <input type="color" class="color-picker" id="gradColor3" value="#f59e0b" />
+              <input type="range" class="slider sm" id="gradPos3" min="0" max="100" value="50" />
+              <span class="slider-val sm" id="gradPos3Val">50%</span>
+            </div>
+            <div class="grad-stop-row hidden" id="gradStop4Row">
+              <span class="stop-num">Stop 4</span>
+              <input type="color" class="color-picker" id="gradColor4" value="#06b6d4" />
+              <input type="range" class="slider sm" id="gradPos4" min="0" max="100" value="75" />
+              <span class="slider-val sm" id="gradPos4Val">75%</span>
+            </div>
+          </div>
+          <div class="stop-ctrl-row">
+            <button class="btn-ghost sm" id="btnAddStop">+ Add Stop</button>
+            <button class="btn-ghost sm danger" id="btnRemoveStop">– Remove</button>
+          </div>
+          <div class="grad-presets-wrap">
+            <h4 class="tiny-title">Presets</h4>
+            <div class="grad-presets" id="gradPresets">
+              <!-- Presets injected by JS -->
+            </div>
+          </div>
+        </div>
+
+        <!-- Image BG -->
+        <div class="panel-section hidden" id="bgImageSection">
+          <h3 class="section-title">Background Image</h3>
+          
+          <div class="api-search-wrap" style="margin-bottom: 12px; display: flex; gap: 8px;">
+            <input type="text" id="bgUnsplashSearch" class="input-ctrl" placeholder="Search Unsplash..." style="flex: 1;" />
+            <button class="btn-secondary sm" id="btnSearchBgUnsplash" style="padding: 0 12px;">Search</button>
+          </div>
+          <div class="api-results-grid" id="bgUnsplashResults"></div>
+          <div class="upload-zone" id="bgImgUploadZone">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 14.899A7 7 0 1115.71 8h1.79a4.5 4.5 0 012.5 8.242"/><path d="M12 12v9"/><path d="M8 17l4-4 4 4"/></svg>
+            <p>Click or drag image</p>
+            <input type="file" id="bgImgInput" accept="image/*" class="hidden-file" />
+
+          </div>
+          <div class="control-row">
+            <label class="control-label">Size</label>
+            <div class="btn-group">
+              <button class="btn-option active" data-bgsize="cover" id="bgSizeCover">Cover</button>
+              <button class="btn-option" data-bgsize="contain" id="bgSizeContain">Contain</button>
+            </div>
+          </div>
+          <div class="control-row">
+            <label class="control-label">Position</label>
+            <select class="select-ctrl" id="bgPosition">
+              <option value="center center">Center</option>
+              <option value="top center">Top</option>
+              <option value="bottom center">Bottom</option>
+              <option value="left center">Left</option>
+              <option value="right center">Right</option>
+            </select>
+          </div>
+          <div class="control-row">
+            <label class="control-label">Repeat</label>
+            <label class="toggle-wrap">
+              <input type="checkbox" id="bgRepeat" />
+              <span class="toggle"></span>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <!-- Image Panel -->
+      <div class="panel hidden" id="panelImage">
+        <div class="panel-section">
+          <h3 class="section-title">Import Image</h3>
+          
+          <div class="api-search-wrap" style="margin-bottom: 12px; display: flex; gap: 8px;">
+            <input type="text" id="fgUnsplashSearch" class="input-ctrl" placeholder="Search Unsplash..." style="flex: 1;" />
+            <button class="btn-secondary sm" id="btnSearchFgUnsplash" style="padding: 0 12px;">Search</button>
+          </div>
+          <div class="api-results-grid" id="fgUnsplashResults"></div>
+          <div class="upload-zone" id="imgUploadZone">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21,15 16,10 5,21"/></svg>
+            <p>Click or drag image</p>
+            <input type="file" id="imgInput" accept="image/*" class="hidden-file" />
+
+          </div>
+        </div>
+        <div class="panel-section" id="imageAdjustSection">
+          <h3 class="section-title">Adjustments</h3>
+          <div class="master-slider-section">
+            <div class="control-row">
+              <label class="control-label" id="masterSliderLabel">Brightness</label>
+              <div class="slider-wrap">
+                <input type="range" class="slider" id="masterFilterSlider" min="0" max="200" value="100" />
+                <span class="slider-val" id="masterFilterVal">100</span>
+              </div>
+            </div>
+          </div>
+          <div class="filter-select-row" id="filterSelectRow">
+            <button class="filter-btn active" data-filter="brightness">Brightness</button>
+            <button class="filter-btn" data-filter="contrast">Contrast</button>
+            <button class="filter-btn" data-filter="darkness">Darkness</button>
+            <button class="filter-btn" data-filter="blur">Blur</button>
+            <button class="filter-btn" data-filter="opacity">Opacity</button>
+            <button class="filter-btn" data-filter="sepia">Sepia</button>
+            <button class="filter-btn" data-filter="warmth">Warmth</button>
+            <button class="filter-btn" data-filter="tint">Tint</button>
+            <button class="filter-btn" data-filter="hue">Hue</button>
+            <button class="filter-btn" data-filter="saturation">Saturation</button>
+            <button class="filter-btn" data-filter="imgSize">Image Size</button>
+          </div>
+          <button class="btn-ghost full-width" id="btnResetFilters">Reset Filters</button>
+        </div>
+        <div class="panel-section hidden" id="imageCropSection">
+          <h3 class="section-title">Crop Layer</h3>
+          <div class="control-row">
+            <label class="control-label">Top</label>
+            <div class="slider-wrap"><input type="range" class="slider" id="cropTop" min="0" max="100" value="0" /></div>
+          </div>
+          <div class="control-row">
+            <label class="control-label">Right</label>
+            <div class="slider-wrap"><input type="range" class="slider" id="cropRight" min="0" max="100" value="0" /></div>
+          </div>
+          <div class="control-row">
+            <label class="control-label">Bottom</label>
+            <div class="slider-wrap"><input type="range" class="slider" id="cropBottom" min="0" max="100" value="0" /></div>
+          </div>
+          <div class="control-row">
+            <label class="control-label">Left</label>
+            <div class="slider-wrap"><input type="range" class="slider" id="cropLeft" min="0" max="100" value="0" /></div>
+          </div>
+          <button class="btn-ghost full-width" id="btnResetCrop">Reset Crop</button>
+        </div>
+      </div>
+
+      <!-- Text Panel -->
+      <div class="panel hidden" id="panelText">
+        <div class="panel-section" id="addTextHeader">
+          <h3 class="section-title">Text Layers</h3>
+          <button class="btn-primary full-width" id="btnAddText">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Add Default Text Layer
+          </button>
+        </div>
+        
+        <div class="panel-section" id="textTemplatesSection">
+          <h3 class="section-title">Text Templates</h3>
+          <div class="text-templates-grid">
+            <button class="text-template-btn t-montserrat" data-template="montserrat">Montserrat</button>
+            <button class="text-template-btn t-oswald" data-template="oswald">Oswald</button>
+            <button class="text-template-btn t-bebas" data-template="bebas">Bebas Neue</button>
+            <button class="text-template-btn t-playfair" data-template="playfair">Playfair Display</button>
+            <button class="text-template-btn t-cinzel" data-template="cinzel">Cinzel</button>
+            <button class="text-template-btn t-dancing" data-template="dancing">Dancing Script</button>
+            <button class="text-template-btn t-pacifico" data-template="pacifico">Pacifico</button>
+            <button class="text-template-btn t-righteous" data-template="righteous">Righteous</button>
+          </div>
+        </div>
+
+        <div class="panel-section hidden" id="textEditorSection">
+          <h3 class="section-title">Text Properties</h3>
+          <div class="control-row" style="align-items:flex-start;gap:8px">
+            <label class="control-label" style="margin-top:8px">Content</label>
+            <textarea class="text-input" id="textContent" placeholder="Enter text..." rows="3"></textarea>
+          </div>
+          <div class="control-row">
+            <label class="control-label">Font</label>
+            <select class="select-ctrl" id="fontFamily">
+              <option value="Inter, sans-serif">Inter</option>
+              <option value="'Outfit', sans-serif">Outfit</option>
+              <option value="'Montserrat', sans-serif">Montserrat</option>
+              <option value="'Oswald', sans-serif">Oswald</option>
+              <option value="'Bebas Neue', sans-serif">Bebas Neue</option>
+              <option value="'Playfair Display', serif">Playfair Display</option>
+              <option value="'Cinzel', serif">Cinzel</option>
+              <option value="'Dancing Script', cursive">Dancing Script</option>
+              <option value="'Pacifico', cursive">Pacifico</option>
+              <option value="'Righteous', cursive">Righteous</option>
+              <option value="'Georgia', serif">Georgia</option>
+              <option value="'Times New Roman', serif">Times New Roman</option>
+              <option value="'Arial', sans-serif">Arial</option>
+              <option value="'Impact', sans-serif">Impact</option>
+            </select>
+          </div>
+          <div class="control-row">
+            <label class="control-label">Size</label>
+            <div class="slider-wrap">
+              <button class="btn-option sm" id="btnFontSizeDec" style="padding: 2px 8px; min-width: 28px;">−</button>
+              <input type="range" class="slider" id="fontSize" min="8" max="200" value="32" />
+              <button class="btn-option sm" id="btnFontSizeInc" style="padding: 2px 8px; min-width: 28px;">+</button>
+              <span class="slider-val" id="fontSizeVal" style="min-width: 40px;">32px</span>
+            </div>
+          </div>
+          <div class="control-row">
+            <label class="control-label">Style</label>
+            <div class="btn-group">
+              <button class="btn-option" id="textBold" title="Bold"><b>B</b></button>
+              <button class="btn-option" id="textItalic" title="Italic"><i>I</i></button>
+              <button class="btn-option" id="textUnderline" title="Underline"><u>U</u></button>
+            </div>
+          </div>
+          <div class="control-row">
+            <label class="control-label">Align</label>
+            <div class="btn-group">
+              <button class="btn-option active" id="textAlignLeft" title="Left">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="15" y2="12"/><line x1="3" y1="18" x2="18" y2="18"/></svg>
+              </button>
+              <button class="btn-option" id="textAlignCenter" title="Center">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="3" y1="6" x2="21" y2="6"/><line x1="7" y1="12" x2="17" y2="12"/><line x1="4" y1="18" x2="20" y2="18"/></svg>
+              </button>
+              <button class="btn-option" id="textAlignRight" title="Right">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="3" y1="6" x2="21" y2="6"/><line x1="9" y1="12" x2="21" y2="12"/><line x1="6" y1="18" x2="21" y2="18"/></svg>
+              </button>
+            </div>
+          </div>
+          <div class="control-row">
+            <label class="control-label">Color</label>
+            <div class="color-row compact" style="gap:4px">
+              <input type="color" class="color-picker" id="textColor" value="#ffffff" />
+              <div class="btn-group" style="flex:1">
+                <button class="btn-option sm active" id="btnColorSolid" style="flex:1; font-size:10px; padding:4px;">Solid</button>
+                <button class="btn-option sm" id="btnColorGrad" style="flex:1; font-size:10px; padding:4px;">Grad</button>
+              </div>
+            </div>
+          </div>
+          <div class="control-row hidden" id="textGradRow">
+            <label class="control-label">Gradient 2</label>
+            <input type="color" class="color-picker" id="textColor2" value="#ec4899" />
+          </div>
+          <div class="control-row">
+            <label class="control-label">BG Color</label>
+            <div class="color-row compact">
+              <input type="color" class="color-picker" id="textBgColor" value="#000000" />
+              <label class="toggle-wrap">
+                <input type="checkbox" id="textBgEnabled" />
+                <span class="toggle"></span>
+              </label>
+            </div>
+          </div>
+          <div class="control-row">
+            <label class="control-label">BG Opacity</label>
+            <div class="slider-wrap">
+              <button class="btn-option sm" id="btnBgOpacityDec" style="padding: 2px 8px; min-width: 28px;">−</button>
+              <input type="range" class="slider" id="textBgOpacity" min="0" max="100" value="50" />
+              <button class="btn-option sm" id="btnBgOpacityInc" style="padding: 2px 8px; min-width: 28px;">+</button>
+              <span class="slider-val" id="textBgOpacityVal" style="min-width: 40px;">50%</span>
+            </div>
+          </div>
+          <div class="control-row">
+            <label class="control-label">Line Height</label>
+            <div class="slider-wrap">
+              <button class="btn-option sm" id="btnLineHeightDec" style="padding: 2px 8px; min-width: 28px;">−</button>
+              <input type="range" class="slider" id="textLineHeight" min="1" max="3" value="1.3" step="0.1" />
+              <button class="btn-option sm" id="btnLineHeightInc" style="padding: 2px 8px; min-width: 28px;">+</button>
+              <span class="slider-val" id="textLineHeightVal" style="min-width: 40px;">1.3</span>
+            </div>
+          </div>
+          <div class="control-row">
+            <label class="control-label">Letter Sp.</label>
+            <div class="slider-wrap">
+              <button class="btn-option sm" id="btnLetterSpacingDec" style="padding: 2px 8px; min-width: 28px;">−</button>
+              <input type="range" class="slider" id="textLetterSpacing" min="-5" max="20" value="0" step="0.5" />
+              <button class="btn-option sm" id="btnLetterSpacingInc" style="padding: 2px 8px; min-width: 28px;">+</button>
+              <span class="slider-val" id="textLetterSpacingVal" style="min-width: 40px;">0px</span>
+            </div>
+          </div>
+          <div class="control-row" style="margin-top:16px; gap:8px;">
+            <button class="btn-secondary flex-1" id="btnDeselectText" style="padding: 8px 0;">Deselect</button>
+            <button class="btn-ghost danger flex-1" id="btnDeleteTextLayer" style="padding: 8px 0;">Delete</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Layers Panel -->
+      <div class="panel hidden" id="panelLayers">
+        <div class="panel-section">
+          <h3 class="section-title">Layers</h3>
+          <div class="layers-list" id="layersList">
+            <div class="layers-empty">No layers yet.<br>Add an image or text.</div>
+          </div>
+          <div class="layer-quick-actions hidden" id="layerQuickActions">
+            <h4 class="tiny-title">Layer Actions</h4>
+            <div class="layer-actions">
+              <button class="icon-btn" id="btnBringToFront2" title="Bring to Front">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v14M19 9l-7-7-7 7M5 21h14"/></svg>
+              </button>
+              <button class="icon-btn" id="btnBringForward2" title="Bring Forward">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="17,11 12,6 7,11"/><line x1="12" y1="18" x2="12" y2="6"/></svg>
+              </button>
+              <button class="icon-btn" id="btnSendBack2" title="Send Backward">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="17,13 12,18 7,13"/><line x1="12" y1="6" x2="12" y2="18"/></svg>
+              </button>
+              <button class="icon-btn" id="btnSendToBack2" title="Send to Back">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22V8M5 15l7 7 7-7M5 3h14"/></svg>
+              </button>
+              <button class="icon-btn" id="btnLockLayer2" title="Lock / Unlock">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+              </button>
+              <button class="icon-btn danger" id="btnDeleteLayer2" title="Delete Layer">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3,6 5,6 21,6"/><path d="M19,6v14a2,2 0 01-2,2H7a2,2 0 01-2-2V6m3,0V4a1,1 0 011-1h4a1,1 0 011,1v2"/></svg>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+      </div> <!-- end panels-wrapper -->
+    </aside>
+
+    <!-- Canvas Area -->
+    <main class="canvas-area" id="canvasArea">
+      <div class="canvas-wrapper" id="canvasWrapper">
+        <div class="canvas" id="designCanvas">
+          <!-- Layers rendered here dynamically -->
+        </div>
+      </div>
+      <div class="canvas-zoom-controls">
+        <button class="zoom-btn" id="btnZoomOut">–</button>
+        <span class="zoom-val" id="zoomVal">100%</span>
+        <button class="zoom-btn" id="btnZoomIn">+</button>
+        <button class="zoom-btn" id="btnZoomFit">Fit</button>
+      </div>
+    </main>
+
+    <!-- Right Info Panel -->
+    <aside class="sidebar right-sidebar" id="rightSidebar">
+      <div class="panel-section">
+        <h3 class="section-title">Canvas Info</h3>
+        <div class="info-row"><span>Ratio</span><span id="infoRatio">1:1</span></div>
+        <div class="info-row"><span>Size</span><span id="infoSize">1080 × 1080</span></div>
+        <div class="info-row"><span>Layers</span><span id="infoLayers">0</span></div>
+      </div>
+      <div class="panel-section">
+        <h3 class="section-title">Selected Layer</h3>
+        <div id="selectedLayerInfo" class="no-selection">Nothing selected</div>
+        <div id="selectedLayerControls" class="hidden">
+          <div class="control-row">
+            <label class="control-label">X</label>
+            <input type="number" class="num-input" id="layerX" />
+          </div>
+          <div class="control-row">
+            <label class="control-label">Y</label>
+            <input type="number" class="num-input" id="layerY" />
+          </div>
+          <div class="control-row">
+            <label class="control-label">W</label>
+            <input type="number" class="num-input" id="layerW" />
+          </div>
+          <div class="control-row">
+            <label class="control-label">H</label>
+            <input type="number" class="num-input" id="layerH" />
+          </div>
+          <div class="control-row">
+            <label class="control-label">Rotate</label>
+            <div class="slider-wrap">
+              <input type="range" class="slider" id="layerRotate" min="-180" max="180" value="0" />
+              <span class="slider-val" id="layerRotateVal">0°</span>
+            </div>
+          </div>
+          <div class="layer-actions">
+            <button class="icon-btn" id="btnBringToFront" title="Bring to Front">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v14M19 9l-7-7-7 7M5 21h14"/></svg>
+            </button>
+            <button class="icon-btn" id="btnBringForward" title="Bring Forward">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="17,11 12,6 7,11"/><line x1="12" y1="18" x2="12" y2="6"/></svg>
+            </button>
+            <button class="icon-btn" id="btnSendBack" title="Send Backward">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="17,13 12,18 7,13"/><line x1="12" y1="6" x2="12" y2="18"/></svg>
+            </button>
+            <button class="icon-btn" id="btnSendToBack" title="Send to Back">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22V8M5 15l7 7 7-7M5 3h14"/></svg>
+            </button>
+            <button class="icon-btn" id="btnLockLayer" title="Lock / Unlock">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+            </button>
+            <button class="icon-btn danger" id="btnDeleteLayer" title="Delete Layer">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3,6 5,6 21,6"/><path d="M19,6v14a2,2 0 01-2,2H7a2,2 0 01-2-2V6m3,0V4a1,1 0 011-1h4a1,1 0 011,1v2"/></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+      <div class="panel-section">
+        <h3 class="section-title">Platform Presets</h3>
+        <div class="preset-list">
+          <div class="preset-item" data-ratio="1:1" data-w="1080" data-h="1080">
+            <span class="preset-platform">Instagram</span>
+            <span class="preset-dim">1080×1080</span>
+          </div>
+          <div class="preset-item" data-ratio="4:5" data-w="1080" data-h="1350">
+            <span class="preset-platform">Instagram Portrait</span>
+            <span class="preset-dim">1080×1350</span>
+          </div>
+          <div class="preset-item" data-ratio="16:9" data-w="1200" data-h="630">
+            <span class="preset-platform">Facebook</span>
+            <span class="preset-dim">1200×630</span>
+          </div>
+          <div class="preset-item" data-ratio="16:9" data-w="1200" data-h="675">
+            <span class="preset-platform">Twitter/X</span>
+            <span class="preset-dim">1200×675</span>
+          </div>
+          <div class="preset-item" data-ratio="9:16" data-w="1080" data-h="1920">
+            <span class="preset-platform">Story / Reel</span>
+            <span class="preset-dim">1080×1920</span>
+          </div>
+          <div class="preset-item" data-ratio="1:1" data-w="800" data-h="800">
+            <span class="preset-platform">WhatsApp</span>
+            <span class="preset-dim">800×800</span>
+          </div>
+        </div>
+      </div>
+    </aside>
+  </div>
+
+  <!-- Hidden export canvas -->
+  <canvas id="exportCanvas" style="display:none"></canvas>
+
+  <!-- Global Upload Overlay -->
+  <div class="global-drop-zone hidden" id="globalDropZone">
+    <div class="drop-msg">
+      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 14.899A7 7 0 1115.71 8h1.79a4.5 4.5 0 012.5 8.242"/><path d="M12 12v9"/><path d="M8 17l4-4 4 4"/></svg>
+      <h2>Drop images anywhere</h2>
+      <p>Supports PNG, JPG, WEBP, SVG, AVIF, GIF</p>
+
+    </div>
+  </div>
+
+  <!-- Toast notification -->
+  <div class="toast hidden" id="toast"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>
